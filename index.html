@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>News TV</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --secondary: #a855f7;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444; 
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Noto Sans Bengali', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            padding-top: 135px;
+            padding-bottom: 90px;
+        }
+
+        /* 🔴 Link Protection */
+        a, #readerContent a {
+            pointer-events: none !important;
+            text-decoration: none !important;
+            color: inherit !important;
+            cursor: default !important;
+        }
+
+        /* Header */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            z-index: 50; background: var(--glass-bg);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header-top {
+            position: relative; display: flex; align-items: center;
+            justify-content: space-between; padding: 16px 24px; min-height: 76px;
+        }
+
+        .header-content {
+            display: flex; width: 100%; justify-content: space-between;
+            align-items: center; transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .header-content.hidden { opacity: 0; pointer-events: none; transform: scale(0.95); }
+
+        .logo {
+            font-size: 1.7rem; font-weight: 800; display: flex;
+            align-items: center; gap: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px;
+        }
+
+        /* Search Overlay */
+        .search-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; padding: 0 24px;
+            background: transparent; opacity: 0; visibility: hidden;
+            transform: scale(1.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10;
+        }
+        .search-overlay.active { opacity: 1; visibility: visible; transform: scale(1); }
+
+        .search-input-wrapper {
+            display: flex; align-items: center; width: 100%;
+            background: #fff; border-radius: 50px; padding: 8px 16px;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15); border: 1px solid var(--primary-glow); pointer-events: auto;
+        }
+        .search-input-wrapper input {
+            flex: 1; border: none; background: transparent; outline: none;
+            font-size: 1.05rem; color: var(--text-dark); padding: 0 12px;
+            font-weight: 600; width: 100%;
+        }
+        .search-input-wrapper .search-icon { color: var(--primary); font-size: 1.1rem; }
+        .search-input-wrapper .close-search-btn {
+            background: rgba(239, 68, 68, 0.1); color: var(--danger); border: none;
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .search-input-wrapper .close-search-btn:hover { background: var(--danger); color: #fff; transform: rotate(90deg); }
+
+        .search-btn, .back-btn {
+            background: rgba(99, 102, 241, 0.1); border: none; color: var(--primary);
+            width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 1.2rem; cursor: pointer; transition: all 0.3s ease; pointer-events: auto;
+        }
+        .search-btn:hover, .back-btn:hover { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
+
+        /* Category Chips */
+        .chips-container { display: flex; overflow-x: auto; gap: 12px; padding: 5px 24px 20px; scrollbar-width: none; }
+        .chips-container::-webkit-scrollbar { display: none; }
+
+        .chip {
+            padding: 10px 24px; background: var(--card-bg); color: var(--text-muted);
+            border-radius: 50px; font-size: 0.95rem; font-weight: 700; white-space: nowrap;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); pointer-events: auto;
+        }
+        .chip.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff; border-color: transparent; box-shadow: 0 8px 25px var(--primary-glow); transform: translateY(-3px);
+        }
+
+        /* Main Area */
+        main { max-width: 650px; margin: 0 auto; padding: 0 16px; min-height: 80vh; }
+        #detailArea { display: none; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; padding-top: 10px; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* News Card */
+        .card {
+            background: var(--card-bg); border-radius: 30px; padding: 14px; margin-bottom: 26px;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.04); border: 1px solid rgba(255, 255, 255, 0.8);
+            cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .card:active { transform: scale(0.96); }
+        .card-img-wrapper { width: 100%; aspect-ratio: 16 / 9; border-radius: 22px; overflow: hidden; position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.06); }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+        .card:hover .card-img { transform: scale(1.08); }
+        .card-body { padding: 20px 10px 8px; }
+
+        .card-meta { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+        .source-tag { background: rgba(99, 102, 241, 0.1); color: var(--primary); padding: 6px 14px; border-radius: 30px; font-size: 0.85rem; font-weight: 800; }
+        .time-tag { color: var(--secondary); font-size: 0.85rem; font-weight: 700; background: rgba(168, 85, 247, 0.1); padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 6px; }
+
+        .card-title { font-size: 1.3rem; font-weight: 800; line-height: 1.5; margin-bottom: 12px; color: var(--text-dark); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card-desc { font-size: 1.05rem; color: var(--text-muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; margin-bottom: 20px; }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px; }
+        .read-more-text { color: var(--primary); font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+
+        .like-btn { background: #f1f5f9; border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: #94a3b8; cursor: pointer; transition: all 0.3s ease; pointer-events: auto; }
+        .like-btn.liked { color: var(--danger); background: rgba(239, 68, 68, 0.15); box-shadow: 0 5px 20px rgba(239, 68, 68, 0.35); animation: heartBeat 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .like-btn.liked i { filter: drop-shadow(0 2px 5px rgba(239,68,68,0.5)); }
+        @keyframes heartBeat { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 60% { transform: scale(0.95); } 100% { transform: scale(1.15); } }
+
+        /* Details Reader View */
+        .reader-header { margin-bottom: 24px; }
+        .reader-title { font-size: 1.8rem; line-height: 1.45; font-weight: 800; margin-bottom: 24px; color: #0f172a; }
+        .reader-hero-img { width: 100%; border-radius: 28px; margin-bottom: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
+        .reader-content { font-size: 1.2rem; line-height: 1.9; color: #334155; padding-bottom: 50px; }
+        .reader-content img { max-width: 100%; height: auto; border-radius: 20px; margin: 24px 0; box-shadow: 0 8px 25px rgba(0,0,0,0.06); }
+        .reader-content p { margin-bottom: 22px; }
+
+        /* Floating Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px);
+            max-width: 380px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(24px); display: flex;
+            justify-content: space-around; padding: 16px 0; border-radius: 50px; box-shadow: 0 15px 45px rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(255,255,255,0.8); z-index: 50; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #94a3b8; cursor: pointer; width: 50%; font-size: 0.85rem; font-weight: 800; transition: all 0.3s ease; pointer-events: auto; }
+        .nav-item.active { color: var(--primary); }
+        .nav-item i { font-size: 1.5rem; transition: transform 0.3s ease; }
+        .nav-item.active i { transform: translateY(-5px); filter: drop-shadow(0 4px 10px var(--primary-glow)); }
+
+        .hide-up { transform: translateY(-120%); }
+        .hide-down { transform: translate(-50%, 150%); } 
+
+        /* Skeleton Loaders & Empty State */
+        .skeleton { background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%); background-size: 200% 100%; animation: loading 1.5s infinite; }
+        @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skel-card { background: #fff; padding: 14px; border-radius: 30px; margin-bottom: 26px; border: 1px solid #f1f5f9; }
+        .skel-img { height: 220px; border-radius: 22px; margin-bottom: 18px; }
+        .skel-line { height: 18px; border-radius: 10px; margin-bottom: 14px; width: 100%; }
+        .skel-line.short { width: 65%; }
+
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+        .empty-state i { font-size: 4rem; color: #e2e8f0; margin-bottom: 24px; }
+        .empty-state p { font-size: 1.3rem; font-weight: 700; }
+        
+        @keyframes highlightNew {
+            0% { border-color: var(--primary); box-shadow: 0 8px 30px var(--primary-glow); }
+            100% { border-color: rgba(255, 255, 255, 0.8); box-shadow: 0 12px 35px rgba(0,0,0,0.04); }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="topBar">
+        <div id="feedHeader">
+            <div class="header-top">
+                <div class="header-content" id="headerContent">
+                    <div class="logo"><i class="fas fa-bolt" style="color: #F59E0B;"></i> News TV</div>
+                    <button class="search-btn" onclick="openSearch()"><i class="fas fa-search"></i></button>
+                </div>
+                
+                <div class="search-overlay" id="searchOverlay">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="খবর খুঁজুন..." oninput="handleSearch(event)">
+                        <button class="close-search-btn" onclick="closeSearch()"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="chips-container" id="chipsContainer"></div>
+        </div>
+        
+        <div id="detailHeader" style="display: none;">
+            <div class="header-top">
+                <button class="back-btn" onclick="closeArticle()"><i class="fas fa-arrow-left"></i></button>
+                <div class="logo" id="detailSourceName" style="font-size: 1.25rem; color: #0f172a; background: none; -webkit-text-fill-color: #0f172a;">
+                    বিস্তারিত
+                </div>
+                <div style="width: 44px;"></div>
+            </div>
+        </div>
+    </header>
+
+    <main id="feedArea"></main>
+
+    <main id="detailArea">
+        <div class="reader-header">
+            <div class="card-meta">
+                <span class="source-tag" id="readerSource"></span>
+                <span class="time-tag" id="readerTime"></span>
+            </div>
+            <h1 class="reader-title" id="readerTitle"></h1>
+        </div>
+        <img src="" id="readerImage" class="reader-hero-img" alt="Cover">
+        <div class="reader-content" id="readerContent"></div>
+    </main>
+
+    <nav class="bottom-nav" id="bottomNav">
+        <div class="nav-item active" id="tabHome" onclick="switchTab('home')">
+            <i class="fas fa-layer-group"></i><span>ফিড</span>
+        </div>
+        <div class="nav-item" id="tabLiked" onclick="switchTab('liked')">
+            <i class="fas fa-heart"></i><span>পছন্দ</span>
+        </div>
+    </nav>
+
+    <script>
+        const PROXY = "https://api.rss2json.com/v1/api.json?rss_url=";
+        
+        const SOURCES = {
+            all: [
+                "https://www.dhakapost.com/rss.xml", 
+                "https://www.jagonews24.com/rss/rss.xml", 
+                "https://feeds.bbci.co.uk/bengali/rss.xml", 
+                "https://www.risingbd.com/rss/rss.xml",
+                "https://www.ittefaq.com.bd/rss.xml",
+                "https://www.jugantor.com/feed",
+                "https://www.kalbela.com/rss.xml",
+                "https://www.banglanews24.com/rss/rss.xml"
+            ],
+            nation: [
+                "https://www.jagonews24.com/rss/national.xml", 
+                "https://www.dhakapost.com/rss/national.xml", 
+                "https://www.risingbd.com/rss/national",
+                "https://feeds.bbci.co.uk/bengali/bangladesh/rss.xml",
+                "https://www.banglanews24.com/rss/national.xml"
+            ],
+            sports: [
+                "https://www.jagonews24.com/rss/sports.xml", 
+                "https://www.dhakapost.com/rss/sports.xml", 
+                "https://www.risingbd.com/rss/sports",
+                "https://www.banglanews24.com/rss/sports.xml"
+            ],
+            politics: [
+                "https://www.jagonews24.com/rss/politics.xml", 
+                "https://www.dhakapost.com/rss/politics.xml",
+                "https://www.risingbd.com/rss/politics",
+                "https://www.banglanews24.com/rss/politics.xml"
+            ],
+            entertainment: [
+                "https://www.risingbd.com/rss/entertainment", 
+                "https://www.jagonews24.com/rss/entertainment.xml", 
+                "https://www.dhakapost.com/rss/entertainment.xml",
+                "https://www.banglanews24.com/rss/entertainment.xml"
+            ],
+            tech: [
+                "https://www.jagonews24.com/rss/technology.xml", 
+                "https://www.dhakapost.com/rss/technology.xml", 
+                "https://www.risingbd.com/rss/technology",
+                "https://www.banglanews24.com/rss/technology.xml"
+            ]
+        };
+
+        const CATS = [
+            { id: 'all', name: 'সব খবর' }, { id: 'nation', name: 'বাংলাদেশ' },
+            { id: 'sports', name: 'খেলাধুলা' }, { id: 'politics', name: 'রাজনীতি' },
+            { id: 'entertainment', name: 'বিনোদন' }, { id: 'tech', name: 'প্রযুক্তি' }
+        ];
+
+        let state = {
+            cat: 'all', tab: 'home', view: 'feed', feedScrollPos: 0,
+            likedItems: JSON.parse(localStorage.getItem('dinora_likes') || '[]'),
+            currentItems: [] 
+        };
+
+        const newsMemory = {};
+        const FALLBACK_IMG = `data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450"%3E%3Crect fill="%23f1f5f9" width="800" height="450"/%3E%3Ctext fill="%2394a3b8" font-family="sans-serif" font-size="40" font-weight="bold" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle"%3ENews TV%3C/text%3E%3C/svg%3E`;
+        
+        let autoUpdateTimer;
+
+        function init() {
+            renderChips();
+            loadNews(state.cat);
+            setupScrollLogic();
+            startRealTimeUpdates();
+        }
+
+        function openSearch() {
+            document.getElementById('headerContent').classList.add('hidden');
+            document.getElementById('searchOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('searchInput').focus(), 100);
+        }
+
+        function closeSearch() {
+            document.getElementById('headerContent').classList.remove('hidden');
+            document.getElementById('searchOverlay').classList.remove('active');
+            document.getElementById('searchInput').value = '';
+            renderFeed(state.currentItems); 
+        }
+
+        function handleSearch(e) {
+            const query = e.target.value.trim().toLowerCase();
+            if (!query) { renderFeed(state.currentItems); return; }
+
+            const filteredData = state.currentItems.filter(item => {
+                const title = (item.title || "").toLowerCase();
+                let tmp = document.createElement("div");
+                tmp.innerHTML = item.description || item.content || "";
+                const cleanDesc = (tmp.textContent || tmp.innerText || "").toLowerCase();
+                return title.includes(query) || cleanDesc.includes(query);
+            });
+            renderFeed(filteredData, true);
+        }
+
+        function renderChips() {
+            const container = document.getElementById('chipsContainer');
+            container.innerHTML = '';
+            if (state.tab !== 'home') { container.parentElement.style.display = 'none'; return; }
+            container.parentElement.style.display = 'block';
+
+            CATS.forEach(cat => {
+                const chip = document.createElement('div');
+                chip.className = `chip ${state.cat === cat.id ? 'active' : ''}`;
+                chip.innerText = cat.name;
+                chip.onclick = () => { closeSearch(); loadNews(cat.id); };
+                container.appendChild(chip);
+            });
+        }
+
+        function switchTab(tabId) {
+            state.tab = tabId;
+            closeSearch(); 
+            document.getElementById('tabHome').classList.toggle('active', tabId === 'home');
+            document.getElementById('tabLiked').classList.toggle('active', tabId === 'liked');
+            renderChips();
+            if (tabId === 'home') loadNews(state.cat);
+            else renderLiked();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function loadNews(categoryId) {
+            state.cat = categoryId;
+            renderChips();
+            const feedArea = document.getElementById('feedArea');
+            feedArea.innerHTML = getSkeletonHTML(4);
+
+            try {
+                const cacheBuster = new Date().getTime();
+                const requests = SOURCES[categoryId].map(url => fetch(PROXY + encodeURIComponent(url) + '&t=' + cacheBuster).then(r => r.json()).catch(()=>null));
+                const responses = await Promise.all(requests);
+                
+                let allItems = [];
+                responses.forEach(res => { if (res && res.status === 'ok') allItems.push(...res.items); });
+
+                let uniqueItems = []; let titles = new Set();
+                allItems.forEach(item => {
+                    if (!titles.has(item.title)) {
+                        titles.add(item.title); uniqueItems.push(item); newsMemory[item.link] = item;
+                    }
+                });
+
+                uniqueItems.sort((a, b) => getValidTime(b.pubDate) - getValidTime(a.pubDate));
+                state.currentItems = uniqueItems;
+                renderFeed(state.currentItems);
+            } catch (e) {
+                feedArea.innerHTML = `<div class="empty-state"><i class="fas fa-wifi"></i><p>সংযোগ সমস্যা।</p></div>`;
+            }
+        }
+        
+        function startRealTimeUpdates() {
+            if(autoUpdateTimer) clearInterval(autoUpdateTimer);
+            autoUpdateTimer = setInterval(() => {
+                const isSearching = document.getElementById('searchOverlay').classList.contains('active');
+                if(state.tab === 'home' && state.view === 'feed' && !isSearching) {
+                    fetchRealTimeNews(state.cat);
+                }
+            }, 40000); 
+        }
+
+        async function fetchRealTimeNews(categoryId) {
+            try {
+                const cacheBuster = new Date().getTime(); 
+                const requests = SOURCES[categoryId].map(url => 
+                    fetch(PROXY + encodeURIComponent(url) + '&t=' + cacheBuster).then(r => r.json()).catch(()=>null)
+                );
+                const responses = await Promise.all(requests);
+                
+                let newItems = [];
+                responses.forEach(res => { 
+                    if (res && res.status === 'ok') {
+                        res.items.forEach(item => {
+                            if (!newsMemory[item.link]) { 
+                                newsMemory[item.link] = item; newItems.push(item);
+                            }
+                        });
+                    } 
+                });
+
+                if (newItems.length > 0) {
+                    newItems.sort((a, b) => getValidTime(b.pubDate) - getValidTime(a.pubDate));
+                    state.currentItems = [...newItems, ...state.currentItems];
+
+                    const feedArea = document.getElementById('feedArea');
+                    const emptyState = feedArea.querySelector('.empty-state');
+                    if (emptyState) emptyState.remove();
+
+                    newItems.reverse().forEach(item => {
+                        const card = createCard(item);
+                        card.style.animation = "slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards, highlightNew 4s ease forwards";
+                        feedArea.insertBefore(card, feedArea.firstChild);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function renderFeed(items, isSearch = false) {
+            const feedArea = document.getElementById('feedArea');
+            feedArea.innerHTML = '';
+            
+            if (!items || items.length === 0) { 
+                feedArea.innerHTML = isSearch 
+                    ? `<div class="empty-state"><i class="fas fa-search" style="color: #cbd5e1; font-size: 3rem;"></i><p style="margin-top: 15px;">আপনার খোঁজা খবরটি পাওয়া যায়নি।</p></div>`
+                    : `<div class="empty-state"><i class="fas fa-box-open"></i><p>খবর নেই।</p></div>`; 
+                return; 
+            }
+            items.forEach(item => feedArea.appendChild(createCard(item)));
+        }
+
+        function renderLiked() {
+            const feedArea = document.getElementById('feedArea');
+            feedArea.innerHTML = '';
+            if (!state.likedItems.length) { 
+                state.currentItems = [];
+                feedArea.innerHTML = `<div class="empty-state"><i class="far fa-heart"></i><p>আপনার পছন্দের কোনো খবর নেই।</p></div>`; return; 
+            }
+            const sortedLikes = [...state.likedItems].sort((a, b) => getValidTime(b.pubDate) - getValidTime(a.pubDate));
+            state.currentItems = sortedLikes; 
+            sortedLikes.forEach(item => { newsMemory[item.link] = item; feedArea.appendChild(createCard(item)); });
+        }
+
+        // 🔴 এখানে পরিবর্তন করা হয়েছে: অজানা সময় থাকলে ঘড়ি লুকানো থাকবে
+        function createCard(item) {
+            const isLiked = state.likedItems.some(f => f.link === item.link);
+            const card = document.createElement('article');
+            card.className = 'card';
+            card.onclick = () => openArticle(item.link);
+            
+            let tmp = document.createElement("div"); tmp.innerHTML = item.description || "";
+            let cleanDesc = tmp.textContent || tmp.innerText || "";
+            
+            const realTime = formatAbsoluteTime(item.pubDate); 
+            
+            // অজানা সময় হলে সময় দেখানোর অপশনটি ফাঁকা করে দেওয়া হলো 
+            const timeTagHtml = realTime !== "অজানা সময়" ? `<span class="time-tag"><i class="far fa-clock"></i> ${realTime}</span>` : '';
+
+            card.innerHTML = `
+                <div class="card-img-wrapper">
+                    <img src="${extractImage(item)}" class="card-img" onerror="this.src='${FALLBACK_IMG}'">
+                </div>
+                <div class="card-body">
+                    <div class="card-meta">
+                        <span class="source-tag">${getSourceName(item.link)}</span>
+                        ${timeTagHtml}
+                    </div>
+                    <h2 class="card-title">${item.title}</h2>
+                    <p class="card-desc">${cleanDesc}</p>
+                    <div class="card-footer">
+                        <span class="read-more-text">বিস্তারিত <i class="fas fa-arrow-right"></i></span>
+                        <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(event, this, '${item.link}')">
+                            <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                        </button>
+                    </div>
+                </div>`;
+            return card;
+        }
+
+        function toggleLike(e, btn, link) {
+            e.stopPropagation();
+            const item = newsMemory[link];
+            const idx = state.likedItems.findIndex(f => f.link === link);
+            const icon = btn.querySelector('i');
+            
+            if (idx >= 0) {
+                state.likedItems.splice(idx, 1);
+                btn.classList.remove('liked'); icon.classList.replace('fas', 'far');
+                if (state.tab === 'liked') {
+                    btn.closest('.card').style.transform = 'scale(0.8)'; btn.closest('.card').style.opacity = '0';
+                    setTimeout(() => { btn.closest('.card').remove(); if(!state.likedItems.length) renderLiked(); }, 300);
+                }
+            } else {
+                state.likedItems.push(item);
+                btn.classList.add('liked'); icon.classList.replace('far', 'fas');
+            }
+            localStorage.setItem('dinora_likes', JSON.stringify(state.likedItems));
+        }
+
+        function openArticle(link) {
+            const item = newsMemory[link];
+            state.view = 'detail';
+            state.feedScrollPos = window.scrollY;
+
+            const realTime = formatAbsoluteTime(item.pubDate);
+
+            document.getElementById('detailSourceName').innerText = getSourceName(item.link);
+            document.getElementById('readerSource').innerText = getSourceName(item.link);
+            
+            // 🔴 এখানেও পরিবর্তন করা হয়েছে: বিস্তারিত পেজে অজানা সময় থাকলে ঘড়ি লুকানো থাকবে
+            const readerTimeEl = document.getElementById('readerTime');
+            if(realTime !== "অজানা সময়") {
+                readerTimeEl.innerHTML = `<i class="far fa-clock"></i> ${realTime}`;
+                readerTimeEl.style.display = 'flex';
+            } else {
+                readerTimeEl.innerHTML = '';
+                readerTimeEl.style.display = 'none';
+            }
+
+            document.getElementById('readerTitle').innerText = item.title;
+            
+            const img = document.getElementById('readerImage');
+            img.src = extractImage(item); img.onerror = () => img.src = FALLBACK_IMG;
+            
+            let rawContent = item.content || item.description || "";
+            let dummyDiv = document.createElement('div');
+            dummyDiv.innerHTML = rawContent;
+            
+            const anchorTags = dummyDiv.querySelectorAll('a');
+            anchorTags.forEach(a => {
+                a.removeAttribute('href');
+                a.removeAttribute('target');
+                a.style.pointerEvents = 'none';
+                a.style.color = 'inherit';
+                a.style.textDecoration = 'none';
+                a.style.cursor = 'default';
+            });
+
+            document.getElementById('readerContent').innerHTML = dummyDiv.innerHTML;
+
+            document.getElementById('feedArea').style.display = 'none';
+            document.getElementById('feedHeader').style.display = 'none';
+            document.getElementById('bottomNav').style.display = 'none'; 
+            document.getElementById('detailArea').style.display = 'block';
+            document.getElementById('detailHeader').style.display = 'block';
+            window.scrollTo(0, 0);
+            document.getElementById('topBar').classList.remove('hide-up');
+        }
+
+        function closeArticle() {
+            state.view = 'feed';
+            document.getElementById('detailArea').style.display = 'none';
+            document.getElementById('detailHeader').style.display = 'none';
+            document.getElementById('feedArea').style.display = 'block';
+            document.getElementById('feedHeader').style.display = 'block';
+            document.getElementById('bottomNav').style.display = 'flex';
+            window.scrollTo(0, state.feedScrollPos);
+        }
+
+        function getValidTime(dateStr) {
+            if (!dateStr) return 0; 
+            
+            let safeDateStr = String(dateStr).trim();
+            if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(safeDateStr)) {
+                safeDateStr = safeDateStr.replace(' ', 'T') + 'Z'; 
+            }
+            
+            let d = new Date(safeDateStr);
+            if (!isNaN(d.getTime())) return d.getTime();
+            
+            d = new Date(dateStr);
+            if (!isNaN(d.getTime())) return d.getTime();
+            
+            return 0; 
+        }
+
+        function formatAbsoluteTime(dateStr) {
+            const timeVal = getValidTime(dateStr);
+            if (timeVal === 0) return "অজানা সময়";
+            
+            const date = new Date(timeVal);
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                hour12: true, 
+                timeZone: 'Asia/Dhaka' 
+            };
+            return new Intl.DateTimeFormat('bn-BD', options).format(date);
+        }
+
+        function extractImage(item) {
+            if (item.enclosure?.link) return item.enclosure.link;
+            if (item.thumbnail) return item.thumbnail;
+            const match = (item.description || item.content || "").match(/<img[^>]+src=["']([^"']+)["']/i);
+            return match ? match[1] : FALLBACK_IMG;
+        }
+
+        function getSourceName(l) {
+            l = (l || "").toLowerCase();
+            if (l.includes("dhakapost")) return "ঢাকা পোস্ট";
+            if (l.includes("jagonews")) return "জাগো নিউজ";
+            if (l.includes("bbc")) return "BBC বাংলা";
+            if (l.includes("risingbd")) return "রাইজিং বিডি";
+            if (l.includes("kalbela")) return "কালবেলা";
+            if (l.includes("ittefaq")) return "ইত্তেফাক";
+            if (l.includes("jugantor")) return "যুগান্তর";
+            if (l.includes("banglanews24")) return "বাংলানিউজ২৪";
+            return "অন্যান্য";
+        }
+
+        function getSkeletonHTML(n) { return Array(n).fill(`<div class="skel-card"><div class="skeleton skel-img"></div><div class="skeleton skel-line"></div><div class="skeleton skel-line short"></div></div>`).join(''); }
+
+        function setupScrollLogic() {
+            let lastY = window.scrollY;
+            window.addEventListener('scroll', () => {
+                let y = window.scrollY;
+                if (y <= 0) { document.getElementById('topBar').classList.remove('hide-up'); if(state.view==='feed') document.getElementById('bottomNav').classList.remove('hide-down'); lastY = y; return; }
+                if (Math.abs(y - lastY) < 15) return;
+                if (y > lastY) { document.getElementById('topBar').classList.add('hide-up'); if(state.view==='feed') document.getElementById('bottomNav').classList.add('hide-down'); } 
+                else { document.getElementById('topBar').classList.remove('hide-up'); if(state.view==='feed') document.getElementById('bottomNav').classList.remove('hide-down'); }
+                lastY = y;
+            }, { passive: true });
+        }
+
+        init();
+    </script>
+  <script src="https://pl30746497.effectivecpmnetwork.com/ac/72/13/ac72132d5710ac640882a2bd088372f4.js"></script>
+</body>
+</html>
